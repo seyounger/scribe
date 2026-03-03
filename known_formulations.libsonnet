@@ -29,13 +29,13 @@ local cfe_x = cfe + r.with_init_config('CFE_NASH_X_{{id}}.ini');
 local sacsma = r.bmi_fortran
                + r.bmi_variant('SacSMA',
                                'tci',
-                               'libsacbmi',
+                               'libsacbmi.so',
                                init_config_file_pattern='SacSma_{{id}}.namelist');
 
 local snow17 = r.bmi_fortran
                + r.bmi_variant('Snow17',
                                'raim',
-                               'libsnow17bmi',
+                               'libsnow17_bmi.so',
                                init_config_file_pattern='Snow17_{{id}}.namelist');
 
 local casam = r.bmi_cpp
@@ -43,6 +43,13 @@ local casam = r.bmi_cpp
                                'precipitation_rate',
                                'liblasambmi',
                                init_config_file_pattern='Casam_{{id}}.namelist');
+
+local pet = r.bmi_c
+            + r.bmi_variant('PET',
+                            'water_potential_evaporation_flux',
+                            'libpetbmi.so',
+                            init_config_file_pattern='PET_{{id}}.ini',
+                            registration_function='register_bmi_pet');
 
 local sloth_nom_cfe(cfe_variant) =
   local sloth_model_params = {
@@ -95,6 +102,24 @@ local noahowp_topmodel =
   local modules = [noahowp_mod, topmodel_mod];
   r.MultiBmi(modules=modules, main_output_variable='Qout', model_type_name='NoahOWP_TOPMODEL');
 
+local pet_snow17_sacsma =
+  local snow17_vnm = {
+    precip: 'APCP_surface',
+    tair: 'land_surface_air__temperature',
+    raim: 'raim',
+  };
+  local snow17_mod = snow17 + r.with_variables_names_map(snow17_vnm);
+
+  local sacsma_vnm = {
+    pet: 'water_potential_evaporation_flux',
+    precip: 'raim',
+    tair: 'land_surface_air__temperature',
+  };
+  local sacsma_mod = sacsma + r.with_variables_names_map(sacsma_vnm);
+
+  local modules = [pet, snow17_mod, sacsma_mod];
+  r.MultiBmi(modules=modules, main_output_variable='tci', model_type_name='SAC_SNOW17_PET');
+
 {
   noahowp:: noahowp,
   topmodel:: topmodel,
@@ -112,4 +137,6 @@ local noahowp_topmodel =
   sacsma:: sacsma,
   snow17:: snow17,
   casam:: casam,
+  pet:: pet,
+  pet_snow17_sacsma:: pet_snow17_sacsma,
 }
