@@ -324,14 +324,14 @@ local sacsma = {
       name: 'lztwm',
     },
     {
-      init: 0.025,
+      init: 0.05,
       max: 0.05,
       min: 0,
       name: 'pctim',
     },
     {
-      init: 0.25,
-      max: 0.5,
+      init: 0.05,
+      max: 0.05,
       min: 0,
       name: 'pfree',
     },
@@ -378,7 +378,7 @@ local snow17 = {
   Snow17: [
     {
       init: 1.15,
-      max: 1.7,
+      max: 1.6,
       min: 0.7,
       name: 'scf',
     },
